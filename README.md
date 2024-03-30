@@ -41,21 +41,28 @@ python main.py
 
 ### База данных
 
-Все нужные для работы таблицы описанные в файле [bdCreate.sql](https://github.com/kostya-main/LK_DiscordBot/blob/main/bdCreate.sql) (Включая и те которые нужны GravitLauncher)
+Все нужные для работы таблицы описанные в файле [bdCreate.sql](https://github.com/kostya-main/LK_DiscordBot/blob/gravit-launcher/bdCreate.sql) (Включая и те которые нужны GravitLauncher)
 
 ### Настройка Nginx
 
-Конфигурация вашего домена описана в файле [nginx.conf](https://github.com/kostya-main/LK_DiscordBot/blob/main/nginx.conf)
+Конфигурация вашего домена описана в файле [nginx.conf](https://github.com/kostya-main/LK_DiscordBot/blob/gravit-launcher/nginx.conf)
 
 ### Настройка GravitLauncher
 
-Способ авторизации `mysql` с включённым `enableHardwareFeature`. Нуждается настройка только `textureProvider`.
+Способ авторизации `mysql` с включённым `enableHardwareFeature`. Нуждается настройка только `textureProvider`, `passwordVerifier`.
 
 ```
 "textureProvider": {
-        "url": "https://api.ВАШ_ДОМЕН.ru/storage?uuid=%uuid%",
-        "type": "json"
-      }
+  "url": "https://api.ВАШ_ДОМЕН.ru/storage?uuid=%uuid%",
+  "type": "json"
+}
+```
+
+```
+"passwordVerifier": {
+  "algo": "SHA256",
+  "type": "digest"
+}
 ```
 
 ### Настройка ЮKassa
