@@ -18,19 +18,32 @@ db = dbmanager.dbm(config.db.login, config.db.password, config.db.host, config.d
 @client.event
 async def on_ready():
     try:
+        print("\n"
+              " ___ ___   _____ ___   _   __  __ \n"
+              "| _ \ _ \ |_   _| __| /_\ |  \/  |\n"
+              "|  _/   /   | | | _| / _ \| |\/| |\n"
+              "|_| |_|_\   |_| |___/_/ \_\_|  |_|\n")
+
+        print()
+        print(" - Информация о боте - ")
+        print("Имя бота: {0.user}".format(client))
+        print(f"ID бота: {client.user.id}")
+        print(f"Пинг во время запуска: {round(client.latency * 1000)} мс")
+
         #Загрузка папки cogs
         for dir_cogs in await aiofiles.os.listdir('./cogs'):
             for filename in await aiofiles.os.listdir(f'./cogs/{dir_cogs}'):
-                if filename.endswith('.py'):
-                    await client.load_extension(f'cogs.{dir_cogs}.{filename[:-3]}')
-                else:
-                    print(f'Не является Cogs {filename}')
+                if filename != '__pycache__':
+                    if filename.endswith('.py') and filename != '__pycache__':
+                        await client.load_extension(f'cogs.{dir_cogs}.{filename[:-3]}')
+                    else:
+                        print(f'Не является Cogs {filename}')
         #Удаление всех команд из подсказок в Discord
         #client.tree.clear_commands(guild=None)
         for Directory in [config.web.skindir, config.web.capedir, config.web.avatardir]:
             if not await aiofiles.os.path.exists(Directory):
                 await aiofiles.os.mkdir(Directory)
-        print(f"Команд найдено {len(await client.tree.sync())}")
+        print(f"Команд найдено: {len(await client.tree.sync())}")
     except Exception as ex:
         print(ex)
 
