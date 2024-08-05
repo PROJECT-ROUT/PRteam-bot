@@ -10,3 +10,5 @@ aio-mc-rcon==3.2.2
 python-dateutil==2.9.0.post0
 aiofiles==23.2.1
 dynaconf==3.2.5
+
+api.mcsrvstat.py==2023.9.4
