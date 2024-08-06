@@ -1,0 +1,41 @@
+version: "3.7"
+
+services:
+  traefik:
+    image: traefik:v2.4
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  bot:
+    image: bot
+    networks:
+      - pr_network
+    labels:
+      - "traefik.http.routers.bot.rule=Host(`prdev-bot-6adc5e-315b78-34-69-164-94.traefik.me`)"
+      - "traefik.http.services.bot.loadbalancer.server.port=8123"
+    environment:
+      - DB_HOST=mariadb
+      - DB_USER=pruser
+      - DB_PASSWORD=12300
+      - DB_NAME=db_prteam
+
+  mariadb:
+    image: mariadb
+    environment:
+      - MYSQL_ROOT_PASSWORD=12300
+      - MYSQL_DATABASE=db_prteam
+      - MYSQL_USER=pruser
+      - MYSQL_PASSWORD=12300
+    networks:
+      - pr_network
+
+networks:
+  my_network:
+    driver: bridge
