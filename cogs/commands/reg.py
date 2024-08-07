@@ -14,15 +14,26 @@ class Reg(commands.Cog):
 
     @app_commands.command(name="reg", description="Регистрация")
     @app_commands.default_permissions(permissions=0)
-    async def reg(self, interaction: discord.Integration):
+    async def reg_slash(self, interaction: discord.Interaction):
+        if config.bot.white_list:
+            role = discord.utils.get(interaction.user.roles, id=config.bot.white_list_role)
+            if role:
+                await self.reg(interaction)
+            else:
+                await interaction.response.send_message('У вас недостаточно прав для регистрации на сервере')
+        else:
+            await self.reg(interaction)
+
+    async def reg(self, interaction: discord.Interaction):
         if db.connect():
             r = db.getUsernameByDiscordID(interaction.user.id)
             if r[0] and r[1] is None:
-                await interaction.response.send_modal(Reg.Registar())
+                await interaction.response.send_modal(self.Registar())
             else:
                 await interaction.response.send_message('Ты уже зарегистрирован')
-        db.close()
-
+            db.close()  # Закрываем соединение с базой данных после выполнения
+        else:
+            await interaction.response.send_message('Не удалось подключиться к базе данных, повторите попытку позже')
 
     class Registar(discord.ui.Modal, title="Регистрация нового аккаунта"):
         def __init__(self):
