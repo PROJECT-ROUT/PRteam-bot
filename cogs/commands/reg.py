@@ -5,8 +5,10 @@ from discord.ext import commands
 from discord import app_commands
 from aiomcrcon import Client
 from dateutil.parser import parse
-
+import aiofiles
+import shutil
 from main import db, config
+
 
 class Reg(commands.Cog):
     def __init__(self, client):
@@ -38,11 +40,14 @@ class Reg(commands.Cog):
     class Registar(discord.ui.Modal, title="Регистрация нового аккаунта"):
         def __init__(self):
             super().__init__(timeout=None)
-            
-        login = discord.ui.TextInput(label="Игровой логин",placeholder="Логин", style=discord.TextStyle.short, required=True, min_length=4, max_length=16)
-        password = discord.ui.TextInput(label="Уникальный пароль",placeholder="Пароль", style=discord.TextStyle.short, required=True, min_length=5, max_length=20)
-        if config.bot.event_birthday==True:
-            birthday = discord.ui.TextInput(label="Дата твоего рождения",placeholder="2015-12-31", style=discord.TextStyle.short, required=True, min_length=8, max_length=10)
+
+        login = discord.ui.TextInput(label="Игровой логин", placeholder="Логин", style=discord.TextStyle.short,
+                                     required=True, min_length=4, max_length=16)
+        password = discord.ui.TextInput(label="Уникальный пароль", placeholder="Пароль", style=discord.TextStyle.short,
+                                        required=True, min_length=5, max_length=20)
+        if config.bot.event_birthday:
+            birthday = discord.ui.TextInput(label="Дата твоего рождения", placeholder="2015-12-31",
+                                            style=discord.TextStyle.short, required=True, min_length=8, max_length=10)
 
         async def on_submit(self, interaction: discord.Interaction):
             if db.connect():
@@ -50,7 +55,7 @@ class Reg(commands.Cog):
                     r = db.getUsernameByDiscordID(interaction.user.id)
                     login = self.login.value
                     password = self.password.value
-                    if config.bot.event_birthday==True:
+                    if config.bot.event_birthday:
                         try:
                             birthday = parse(self.birthday.value)
                         except Exception:
@@ -58,21 +63,43 @@ class Reg(commands.Cog):
                             return
                     else:
                         birthday = None
-                    if re.fullmatch(r'[a-z0-9_-]{4,16}', login, re.IGNORECASE) == None:
+                    if re.fullmatch(r'[a-z0-9_-]{4,16}', login, re.IGNORECASE) is None:
                         await interaction.response.send_message('В вашем нике использует некорректные символы!')
                         return
                     r_reg = db.register(interaction.user.id, login, password, birthday)
                     if r_reg[0]:
-                        embedVar = discord.Embed(title="Вы успешно зарегистрированы!", description="Вам предоставлен доступ на пробный период в 7 дней. Этого времени должно хватить, чтобы вы смогли составить мнение о проекте. По истечении срока мы предложим вам оформить подписку за символическую плату 100 рублей/месяц. Доступ по подписке помогает нам обеспечить адекватную аудиторию на сервере и больше времени уделять его развитию. Надеемся на ваше понимание и желаем вам приятной игры!", color=config.bot.embedColor)
-                        embedVar.add_field(name="Ссылки на игровой клиент", value="Он необходим для входа на сервер", inline=False)
-                        embedVar.add_field(name="Windows", value=f"[Скачать]({config.web.url_launcher_exe})", inline=True)
-                        embedVar.add_field(name="Linux/MacOS", value=f"[Скачать]({config.web.url_launcher_jar})", inline=True)
+                        # Получение UUID нового пользователя
+                        uuid = db.check_uuid(login)[1]["uuid"]
+
+                        # Пути к скину и плащу по умолчанию
+                        default_skin_path = 'defaults/skin.png'
+                        default_cape_path = 'defaults/cape.png'
+
+                        # Пути, куда нужно скопировать файлы
+                        skin_target_path = f'{config.web.skindir}/{uuid}.png'
+                        cape_target_path = f'{config.web.capedir}/{uuid}.png'
+
+                        # Копирование скина и плаща
+                        shutil.copy(default_skin_path, skin_target_path)
+                        shutil.copy(default_cape_path, cape_target_path)
+
+                        # Отправка сообщения о успешной регистрации
+                        embedVar = discord.Embed(title="Вы успешно зарегистрированы!",
+                                                 description="Вам предоставлен доступ на пробный период в 7 дней. Этого времени должно хватить, чтобы вы смогли составить мнение о проекте. По истечении срока мы предложим вам оформить подписку за символическую плату 100 рублей/месяц. Доступ по подписке помогает нам обеспечить адекватную аудиторию на сервере и больше времени уделять его развитию. Надеемся на ваше понимание и желаем вам приятной игры!",
+                                                 color=config.bot.embedColor)
+                        embedVar.add_field(name="Ссылки на игровой клиент", value="Он необходим для входа на сервер",
+                                           inline=False)
+                        embedVar.add_field(name="Windows", value=f"[Скачать]({config.web.url_launcher_exe})",
+                                           inline=True)
+                        embedVar.add_field(name="Linux/MacOS", value=f"[Скачать]({config.web.url_launcher_jar})",
+                                           inline=True)
                         await interaction.response.send_message(embed=embedVar)
                     elif (not r[0]) and (r[1] == '1062'):
                         await interaction.response.send_message('Ник или пароль уже занят')
                 except Exception as ex:
                     print(ex)
-                    await interaction.response.send_message(f'**Ошибка:** Неверный синтаксис\nПравильно: {config.bot.prefix}reg')
+                    await interaction.response.send_message(
+                        f'**Ошибка:** Неверный синтаксис\nПравильно: {config.bot.prefix}reg')
                 finally:
                     db.close()
 
