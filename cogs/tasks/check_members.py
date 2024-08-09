@@ -13,7 +13,7 @@ class Members(commands.Cog):
         channel = self.client.get_channel(config.bot.members_vc)
         if channel and guild:
             member_count = guild.member_count
-            new_name = f"Участники: {member_count}"
+            new_name = f"🌍 Участники: {member_count}"
             await channel.edit(name=new_name)
         else:
             print(f'Канал с ID {config.bot.members_vc} или Guild ID {config.bot.guild} не найдены')
