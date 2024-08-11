@@ -10,3 +10,5 @@
 # Ignore dynaconf secret files
 .secrets.*
 *.old
+
+/conf/settings.yaml
