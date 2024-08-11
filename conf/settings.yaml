@@ -1,14 +1,10 @@
 bot:
-  token: Ваш токен бота
+  token: Ваш токин бота
   prefix: /
   embedColor: 0x8c4bc9
   guild: ID Discord сервера
-  members_vc: ID Приватного Войс-Чата, в его названии будет выводиться количетсво участников на сервере
-  server: IP майнкрафт сервера
   adminRole: ID Роли для выполнение команд администрирования
-  event_birthday: false # true если вам нужны функции связанные в датой рождения
-  white_list: false # true если нужен whitelist
-  white_list_role: Роль которой предоставляется возможность зарегистрироваться в лаунчере
+  event_birthday: true #Нужен ли вам функции связанные в датой рождения
 db:
   host: localhost
   login: root
