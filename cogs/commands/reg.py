@@ -15,14 +15,26 @@ class Reg(commands.Cog):
     @app_commands.command(name="reg", description="Регистрация")
     @app_commands.default_permissions(permissions=0)
     async def reg_slash(self, interaction: discord.Interaction):
-        if config.bot.white_list:
+        if interaction.guild is None:
+            guild = discord.utils.get(self.client.guilds, id=config.bot.guild)  # Получаем сервер по ID
+            if guild:
+                member = guild.get_member(interaction.user.id)  # Проверяем, является ли пользователь участником сервера
+                if member:
+                    role = discord.utils.get(member.roles, id=config.bot.white_list_role)
+                    if role:
+                        await self.reg(interaction)
+                    else:
+                        await interaction.response.send_message('У вас недостаточно прав для регистрации на сервере')
+                else:
+                    await interaction.response.send_message('Вы не являетесь участником сервера.')
+            else:
+                await interaction.response.send_message('Сервер не найден.')
+        else:  # Если команда выполнена на сервере
             role = discord.utils.get(interaction.user.roles, id=config.bot.white_list_role)
             if role:
                 await self.reg(interaction)
             else:
                 await interaction.response.send_message('У вас недостаточно прав для регистрации на сервере')
-        else:
-            await self.reg(interaction)
 
     async def reg(self, interaction: discord.Interaction):
         if db.connect():
@@ -38,7 +50,7 @@ class Reg(commands.Cog):
     class Registar(discord.ui.Modal, title="Регистрация нового аккаунта"):
         def __init__(self):
             super().__init__(timeout=None)
-            
+
         login = discord.ui.TextInput(label="Игровой логин",placeholder="Логин", style=discord.TextStyle.short, required=True, min_length=4, max_length=16)
         password = discord.ui.TextInput(label="Уникальный пароль",placeholder="Пароль", style=discord.TextStyle.short, required=True, min_length=5, max_length=20)
         if config.bot.event_birthday==True:
